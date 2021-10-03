@@ -3250,6 +3250,8 @@ void ObjectMgr::LoadItemTemplates()
             TC_LOG_ERROR("sql.sql", "Item (Entry: {}) has too large negative in stackable ({}), replace by value (-1) no stacking limits.", entry, itemTemplate.Stackable);
             itemTemplate.Stackable = -1;
         }
+        else if (itemTemplate.Stackable > 1 && itemTemplate.Class == ITEM_CLASS_TRADE_GOODS)
+            itemTemplate.Stackable = 200;
 
         if (itemTemplate.ContainerSlots > MAX_BAG_SIZE)
         {
