@@ -4596,8 +4596,11 @@ void ObjectMgr::LoadPlayerInfo()
         {
             if (_playerXPperLevel[level] == 0)
             {
-                TC_LOG_ERROR("sql.sql", "Level {} does not have XP for level data. Using data of level [{}] + 100.", level + 1, level);
+                TC_LOG_ERROR("sql.sql", "Level {} does not have XP for level data. Using data of level [{}] * 101%", level + 1, level);
                 _playerXPperLevel[level] = _playerXPperLevel[level - 1] + 100;
+                uint32 extraXPforLevel = _playerXPperLevel[level - 1] / 100;
+                extraXPforLevel -= extraXPforLevel % 100;
+                _playerXPperLevel[level] += extraXPforLevel;
             }
         }
 
