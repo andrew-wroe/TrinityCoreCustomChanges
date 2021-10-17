@@ -98,13 +98,18 @@ void WorldSession::HandleAutostoreLootItemOpcode(WorldPacket& recvData)
                 {
                     if (LootItem* item = loot->LootItemInSlot(i, player))
                     {
-                        if (player->AddItem(item->itemid, item->count))
+                        InventoryResult res = EQUIP_ERR_OK;
+                        if (player->AddItem(item->itemid, item->count, &res))
                         {
                             player->SendNotifyLootItemRemoved(lootSlot);
                             player->SendLootRelease(player->GetLootGUID());
                         }
-                        else
+                        else switch (res)
                         {
+                        case EQUIP_ERR_CANT_CARRY_MORE_OF_THIS:
+                        case EQUIP_ERR_YOU_CAN_NEVER_USE_THAT_ITEM:
+                            break;
+                        default:
                             items[item->itemid][item->randomPropertyId] += item->count;
                         }
                     }
