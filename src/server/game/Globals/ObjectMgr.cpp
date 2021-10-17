@@ -4537,8 +4537,8 @@ void ObjectMgr::LoadPlayerInfo()
                 {
                     if (info->levelInfo[level].stats[0] == 0)
                     {
-                        TC_LOG_ERROR("sql.sql", "Race {} Class {} Level {} does not have stats data. Using stats data of level {}.", race, class_, level + 1, level);
-                        info->levelInfo[level] = info->levelInfo[level - 1];
+                        TC_LOG_ERROR("sql.sql", "Race {} Class {} Level {} does not have stats data. Building stats data of level {}.", race, class_, level + 1, level);
+                        BuildPlayerLevelInfo(race, class_, level, &info->levelInfo[level]);
                     }
                 }
             }
@@ -4636,16 +4636,21 @@ void ObjectMgr::GetPlayerLevelInfo(uint32 race, uint32 class_, uint8 level, Play
         BuildPlayerLevelInfo(race, class_, level, info);
 }
 
-void ObjectMgr::BuildPlayerLevelInfo(uint8 race, uint8 _class, uint8 level, PlayerLevelInfo* info) const
+void ObjectMgr::BuildPlayerLevelInfo(uint8 race, uint8 class_, uint8 level, PlayerLevelInfo* info) const
 {
     // base data (last known level)
-    *info = _playerInfo[race][_class]->levelInfo[sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) - 1];
+    auto const& pInfo = _playerInfo[race][class_];
+    uint8 lvl = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) - 1;
+    while (lvl && pInfo->levelInfo[lvl].stats[0] == 0)
+        --lvl;
 
+    *info = pInfo->levelInfo[lvl];
     // if conversion from uint32 to uint8 causes unexpected behaviour, change lvl to uint32
-    for (uint8 lvl = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) - 1; lvl < level; ++lvl)
+    for (; lvl < level; ++lvl)
     {
-        switch (_class)
+        switch (class_)
         {
+            case CLASS_DEATH_KNIGHT:
             case CLASS_WARRIOR:
                 info->stats[STAT_STRENGTH]  += (lvl > 23 ? 2: (lvl > 1  ? 1: 0));
                 info->stats[STAT_STAMINA]   += (lvl > 23 ? 2: (lvl > 1  ? 1: 0));
