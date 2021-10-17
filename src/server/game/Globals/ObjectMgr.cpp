@@ -3911,8 +3911,18 @@ void ObjectMgr::LoadPetLevelInfo()
         {
             if (pInfo[level].health == 0)
             {
-                TC_LOG_ERROR("sql.sql", "Creature {} has no data for Level {} pet stats data, using data of Level {}.", itr->first, level + 1, level);
+                TC_LOG_ERROR("sql.sql", "Creature {} has no data for Level {} pet stats data, bumping data of Level {}.", itr->first, level + 1, level);
                 pInfo[level] = pInfo[level - 1];
+                if (level > 1)
+                {
+                    pInfo[level].health += pInfo[level - 1].health - pInfo[level - 2].health;
+                    pInfo[level].mana += pInfo[level - 1].mana - pInfo[level - 2].mana;
+                    pInfo[level].armor += pInfo[level - 1].armor - pInfo[level - 2].armor;
+                    pInfo[level].minDamage += pInfo[level - 1].minDamage - pInfo[level - 2].minDamage;
+                    pInfo[level].maxDamage += pInfo[level - 1].maxDamage - pInfo[level - 2].maxDamage;
+                    for (uint8 i = 0; i < MAX_STATS; i++)
+                        pInfo[level].stats[i] += pInfo[level - 1].stats[i] - pInfo[level - 2].stats[i];
+                }
             }
         }
     }
@@ -4430,8 +4440,13 @@ void ObjectMgr::LoadPlayerInfo()
             {
                 if (pClassInfo->levelInfo[level].basehealth == 0)
                 {
-                    TC_LOG_ERROR("sql.sql", "Class {} Level {} does not have health/mana data. Using stats data of level {}.", class_, level + 1, level);
+                    TC_LOG_ERROR("sql.sql", "Class {} Level {} does not have health/mana data. Bumping stats data of level {}.", class_, level + 1, level);
                     pClassInfo->levelInfo[level] = pClassInfo->levelInfo[level - 1];
+                    if (level > 1)
+                    {
+                        pClassInfo->levelInfo[level].basehealth += pClassInfo->levelInfo[level - 1].basehealth - pClassInfo->levelInfo[level - 2].basehealth;
+                        pClassInfo->levelInfo[level].basemana += pClassInfo->levelInfo[level - 1].basemana - pClassInfo->levelInfo[level - 2].basemana;
+                    }
                 }
             }
         }
@@ -4537,8 +4552,13 @@ void ObjectMgr::LoadPlayerInfo()
                 {
                     if (info->levelInfo[level].stats[0] == 0)
                     {
-                        TC_LOG_ERROR("sql.sql", "Race {} Class {} Level {} does not have stats data. Building stats data of level {}.", race, class_, level + 1, level);
-                        BuildPlayerLevelInfo(race, class_, level, &info->levelInfo[level]);
+                        TC_LOG_ERROR("sql.sql", "Race {} Class {} Level {} does not have stats data. Bumping stats data of level {}.", race, class_, level + 1, level);
+                        info->levelInfo[level] = info->levelInfo[level - 1];
+                        if (level > 1)
+                        {
+                            for (uint8 i = 0; i < MAX_STATS; i++)
+                                info->levelInfo[level].stats[i] += info->levelInfo[level - 1].stats[i] - info->levelInfo[level - 2].stats[i];
+                        }
                     }
                 }
             }
