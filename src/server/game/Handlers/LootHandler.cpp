@@ -284,13 +284,14 @@ void WorldSession::HandleLootMoneyOpcode(WorldPacket& /*recvData*/)
                     for (std::vector<Creature*>::iterator itr = creaturedie.begin(); itr != creaturedie.end(); ++itr)
                     {
                         c = *itr;
-                        loot = &c->loot;
+                        Loot* loot = &c->loot;
                         gold += loot->gold;
                         loot->gold = 0;
                     }
-                    loot->gold = gold;
+                    loot->gold += gold;
                 }
             }
+
             player->ModifyMoney(loot->gold);
             player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_MONEY, loot->gold);
 
