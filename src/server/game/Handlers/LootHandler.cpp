@@ -80,7 +80,7 @@ void WorldSession::HandleAutostoreLootItemOpcode(WorldPacket& recvData)
     }
     else
     {
-        Creature* creature = GetPlayer()->GetMap()->GetCreature(lguid);
+        Creature* creature = player->GetMap()->GetCreature(lguid);
         if (!player->GetGroup() && creature && sConfigMgr->GetBoolDefault("AOE.LOOT.enable", true))
         {
             std::map<uint32, std::map<int32, uint32>> items;
@@ -104,7 +104,7 @@ void WorldSession::HandleAutostoreLootItemOpcode(WorldPacket& recvData)
                         if (player->AddItem(item->itemid, item->count, &res))
                         {
                             player->SendNotifyLootItemRemoved(lootSlot);
-                            player->SendLootRelease(player->GetLootGUID());
+                            player->SendLootRelease(lguid);
                         }
                         else if (filter.empty() || std::find(filters.begin(), filters.end(), std::to_string(res)) == filters.end())
                         {
@@ -115,9 +115,7 @@ void WorldSession::HandleAutostoreLootItemOpcode(WorldPacket& recvData)
 
                 // This if covers a issue with skinning being infinite by Aokromes
                 if (!creature->IsAlive())
-                {
                     creature->AllLootRemovedFromCorpse();
-                }
 
                 loot->clear();
 
@@ -192,7 +190,7 @@ void WorldSession::HandleLootMoneyOpcode(WorldPacket& /*recvData*/)
     {
         case HighGuid::GameObject:
         {
-            GameObject* go = GetPlayer()->GetMap()->GetGameObject(guid);
+            GameObject* go = player->GetMap()->GetGameObject(guid);
 
             // do not check distance for GO if player is the owner of it (ex. fishing bobber)
             if (go && ((go->GetOwnerGUID() == player->GetGUID() || go->IsWithinDistInMap(player))))
@@ -273,8 +271,7 @@ void WorldSession::HandleLootMoneyOpcode(WorldPacket& /*recvData*/)
         }
         else
         {
-            ObjectGuid lguid = player->GetLootGUID();
-            Creature* creature = GetPlayer()->GetMap()->GetCreature(lguid);
+            Creature* creature = player->GetMap()->GetCreature(guid);
             if (creature && sConfigMgr->GetBoolDefault("AOE.LOOT.enable", true))
             {
                 if (!player->GetGroup())
@@ -364,7 +361,7 @@ void WorldSession::DoLootRelease(ObjectGuid lguid)
 
     if (lguid.IsGameObject())
     {
-        GameObject* go = GetPlayer()->GetMap()->GetGameObject(lguid);
+        GameObject* go = player->GetMap()->GetGameObject(lguid);
 
         // not check distance for GO in case owned GO (fishing bobber case, for example) or Fishing hole GO
         if (!go || ((go->GetOwnerGUID() != _player->GetGUID() && go->GetGoType() != GAMEOBJECT_TYPE_FISHINGHOLE) && !go->IsWithinDistInMap(_player)))
@@ -448,7 +445,7 @@ void WorldSession::DoLootRelease(ObjectGuid lguid)
     }
     else
     {
-        Creature* creature = GetPlayer()->GetMap()->GetCreature(lguid);
+        Creature* creature = player->GetMap()->GetCreature(lguid);
 
         bool lootAllowed = creature && creature->IsAlive() == (player->GetClass() == CLASS_ROGUE && creature->loot.loot_type == LOOT_PICKPOCKETING);
         if (!lootAllowed || !creature->IsWithinDistInMap(_player, INTERACTION_DISTANCE))
