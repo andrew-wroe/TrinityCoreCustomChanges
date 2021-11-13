@@ -88,6 +88,8 @@ void WorldSession::HandleAutostoreLootItemOpcode(WorldPacket& recvData)
             float range = 30.0f;
             std::vector<Creature*> creaturedie;
             player->GetDeadCreatureListInGrid(creaturedie, range);
+            std::string filter = sConfigMgr->GetStringDefault("AOE.MAIL.filter", "");
+            std::vector<std::string_view> filters = Trinity::Tokenize(filter, ',', false);
             for (std::vector<Creature*>::iterator itr = creaturedie.begin(); itr != creaturedie.end(); ++itr)
             {
                 Creature* c = *itr;
@@ -104,12 +106,8 @@ void WorldSession::HandleAutostoreLootItemOpcode(WorldPacket& recvData)
                             player->SendNotifyLootItemRemoved(lootSlot);
                             player->SendLootRelease(player->GetLootGUID());
                         }
-                        else switch (res)
+                        else if (filter.empty() || std::find(filters.begin(), filters.end(), std::to_string(res)) == filters.end())
                         {
-                        case EQUIP_ERR_CANT_CARRY_MORE_OF_THIS:
-                        case EQUIP_ERR_YOU_CAN_NEVER_USE_THAT_ITEM:
-                            break;
-                        default:
                             items[item->itemid][item->randomPropertyId] += item->count;
                         }
                     }
