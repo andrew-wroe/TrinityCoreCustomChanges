@@ -4163,5 +4163,13 @@ Metric.OverallStatusInterval = 1
 
 AOE.LOOT.enable = 1
 
+#    AOE.MAIL.filter
+#         Description: Filter out items that cannot be stored and do not mail them
+#         Example:    "17,10" - (EQUIP_ERR_CANT_CARRY_MORE_OF_THIS,
+#                                EQUIP_ERR_YOU_CAN_NEVER_USE_THAT_ITEM)
+#         Default:    "" - (Disabled)
+
+AOE.MAIL.filter = ""
+
 #
 ###################################################################################################
