@@ -768,7 +768,38 @@ void InstanceScript::UpdateEncounterState(EncounterCreditType type, uint32 credi
                     if (grp->isLFGGroup())
                     {
                         sLFGMgr->FinishDungeon(grp->GetGUID(), dungeonId, instance);
-                        return;
+                        //return;
+                    }
+                }
+
+                if (MapEntry const* mapEntry = instance->GetEntry())
+                {
+                    uint32 badge = 0;
+                    uint8 level = player->GetLevel();
+                    uint32 expansion = mapEntry->Expansion();
+                    if (level >= 80 && expansion >= 2) // WOTLK
+                    {
+                        float avgItemLvl = player->GetAverageItemLevel();
+                        if (avgItemLvl < 200.0)
+                            badge = 40752; // Emblem of Heroism
+                        else if (avgItemLvl < 213.0)
+                            badge = 40753; // Emblem of Valor
+                        else if (avgItemLvl < 226.0)
+                            badge = 45624; // Emblem of Conquest
+                        else if (avgItemLvl < 245.0)
+                            badge = 47672; // Emblem of Triumph
+                        else
+                            badge = 49426; // Emblem of Frost
+                    }
+                    else if (level >= 70 && expansion >= 1) // TBC
+                        badge = 29434; // Badge of Justice
+
+                    if (badge)
+                    {
+                        uint8 count = instance->GetMaxPlayers();
+                        if (instance->IsHeroic())
+                            count *= 2;
+                        player->AddItem(badge, count);
                     }
                 }
             }
