@@ -55,6 +55,8 @@ LFGDungeonData::LFGDungeonData(LFGDungeonEntry const* dbc) : id(dbc->ID), name(d
     maxlevel({ uint8(dbc->MaxLevel), uint8(dbc->MaxLevel), uint8(dbc->MaxLevel) }),
     difficulty(Difficulty(dbc->Difficulty)), seasonal((dbc->Flags & LFG_FLAG_SEASONAL) != 0), x(0.0f), y(0.0f), z(0.0f), o(0.0f)
 {
+    if (maxlevel[expansion] >= DEFAULT_MAX_LEVEL)
+        maxlevel[expansion] = MAX_LEVEL;
 }
 
 LFGMgr::LFGMgr(): m_QueueTimer(0), m_lfgProposalId(1),
@@ -137,6 +139,7 @@ void LFGMgr::LoadRewards()
 
     uint32 count = 0;
 
+    uint32 maxPlayerLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
     Field* fields = nullptr;
     do
     {
@@ -152,10 +155,10 @@ void LFGMgr::LoadRewards()
             continue;
         }
 
-        if (!maxLevel || maxLevel > sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL))
+        if (!maxLevel || maxLevel > maxPlayerLevel)
         {
             TC_LOG_ERROR("sql.sql", "Level {} specified for dungeon {} in table `lfg_dungeon_rewards` can never be reached!", maxLevel, dungeonId);
-            maxLevel = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
+            maxLevel = maxPlayerLevel;
         }
 
         if (!firstQuestId || !sObjectMgr->GetQuestTemplate(firstQuestId))
