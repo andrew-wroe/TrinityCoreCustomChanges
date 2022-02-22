@@ -7137,6 +7137,8 @@ void Player::_ApplyItemBonuses(ItemTemplate const* proto, uint8 slot, bool apply
     if (only_level_scale && (!ssd || !ssv))
         return;
 
+    uint8 level = GetLevel();
+
     for (uint8 i = 0; i < MAX_ITEM_PROTO_STATS; ++i)
     {
         uint32 statType = 0;
@@ -7159,6 +7161,9 @@ void Player::_ApplyItemBonuses(ItemTemplate const* proto, uint8 slot, bool apply
 
         if (val == 0)
             continue;
+
+        if (level > DEFAULT_MAX_LEVEL)
+            val = (val * level) / DEFAULT_MAX_LEVEL;
 
         switch (statType)
         {
