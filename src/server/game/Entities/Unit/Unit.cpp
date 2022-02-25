@@ -710,6 +710,33 @@ bool Unit::HasBreakableByDamageCrowdControlAura(Unit* excludeCasterChannel) cons
 /*static*/ uint32 Unit::DealDamage(Unit* attacker, Unit* victim, uint32 damage, CleanDamage const* cleanDamage, DamageEffectType damagetype, SpellSchoolMask damageSchoolMask, SpellInfo const* spellProto, bool durabilityLoss)
 {
     uint32 rage_damage = damage + (cleanDamage ? cleanDamage->absorbed_damage : 0);
+    auto ScaleDamage = [&damage](Player* player, bool direction)
+    {
+        if (!player) return;
+
+        Map* map = player->GetMap();
+        if (!map) return;
+
+        InstanceMap* instance = map->ToInstanceMap();
+        if (!instance) return;
+
+        Group* group = player->GetGroup();
+        size_t partyCount = group ? group->GetMembersCount() : 1;
+        size_t maxPlayers = instance->GetMaxPlayers();
+        if (partyCount < maxPlayers)
+        {
+            damage *= direction ? maxPlayers : partyCount;
+            damage /= direction ? partyCount : maxPlayers;
+        }
+    };
+
+    if (attacker != victim)
+    {
+        if (attacker)
+            ScaleDamage(attacker->GetControllingPlayer(), true);
+        if (victim)
+            ScaleDamage(victim->GetControllingPlayer(), false);
+    }
 
     if (UnitAI* victimAI = victim->GetAI())
         victimAI->DamageTaken(attacker, damage, damagetype, spellProto);
