@@ -80,8 +80,9 @@ void WorldSession::HandleAutostoreLootItemOpcode(WorldPacket& recvData)
     }
     else
     {
+        Group* group = player->GetGroup();
         Creature* creature = player->GetMap()->GetCreature(lguid);
-        if (!player->GetGroup() && creature && sConfigMgr->GetBoolDefault("AOE.LOOT.enable", true))
+        if ((!group || group->GetMembersCount() == 1) && creature && sConfigMgr->GetBoolDefault("AOE.LOOT.enable", true))
         {
             std::map<uint32, std::map<int32, uint32>> items;
 
@@ -274,7 +275,8 @@ void WorldSession::HandleLootMoneyOpcode(WorldPacket& /*recvData*/)
             Creature* creature = player->GetMap()->GetCreature(guid);
             if (creature && sConfigMgr->GetBoolDefault("AOE.LOOT.enable", true))
             {
-                if (!player->GetGroup())
+                Group* group = player->GetGroup();
+                if (!group || group->GetMembersCount() == 1)
                 {
                     float range = 30.0f;
                     uint32 gold = 0;
