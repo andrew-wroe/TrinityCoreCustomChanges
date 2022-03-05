@@ -5844,6 +5844,32 @@ void Player::UpdateSkillsForLevel()
     uint32 maxSkill = GetMaxSkillValueForLevel();
 
     bool alwaysMaxSkill = sWorld->getBoolConfig(CONFIG_ALWAYS_MAX_SKILL_FOR_LEVEL);
+    if (alwaysMaxSkill) // Use this as proxy for learning all spells too
+    {
+        bool hadNew = true;
+        while (hadNew)
+        {
+            hadNew = false;
+            for (auto trainer : sObjectMgr->GetClassTrainers(GetClass()))
+            {
+                if (!trainer->IsTrainerValidForPlayer(this))
+                    continue;
+
+                for (const auto& trainerSpell : trainer->GetSpells())
+                {
+                    if (!trainer->CanTeachSpell(this, &trainerSpell))
+                        continue;
+
+                    if (trainerSpell.IsCastable())
+                        CastSpell(this, trainerSpell.SpellId, true);
+                    else
+                        LearnSpell(trainerSpell.SpellId, false);
+
+                    hadNew = true;
+                }
+            }
+        }
+    }
 
     for (SkillStatusMap::iterator itr = mSkillStatus.begin(); itr != mSkillStatus.end(); ++itr)
     {
