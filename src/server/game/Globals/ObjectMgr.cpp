@@ -3915,13 +3915,15 @@ void ObjectMgr::LoadPetLevelInfo()
                 pInfo[level] = pInfo[level - 1];
                 if (level > 1)
                 {
-                    pInfo[level].health += pInfo[level - 1].health - pInfo[level - 2].health;
-                    pInfo[level].mana += pInfo[level - 1].mana - pInfo[level - 2].mana;
-                    pInfo[level].armor += pInfo[level - 1].armor - pInfo[level - 2].armor;
-                    pInfo[level].minDamage += pInfo[level - 1].minDamage - pInfo[level - 2].minDamage;
-                    pInfo[level].maxDamage += pInfo[level - 1].maxDamage - pInfo[level - 2].maxDamage;
+                    auto boost = (level % 5 == 0) ? 2 : 1;
+                    pInfo[level].health += boost * (pInfo[level - 1].health - pInfo[level - 2].health);
+                    pInfo[level].mana += boost * (pInfo[level - 1].mana - pInfo[level - 2].mana);
+                    pInfo[level].armor += boost * (pInfo[level - 1].armor - pInfo[level - 2].armor);
+                    pInfo[level].minDamage += boost * (pInfo[level - 1].minDamage - pInfo[level - 2].minDamage);
+                    pInfo[level].maxDamage += boost * (pInfo[level - 1].maxDamage - pInfo[level - 2].maxDamage);
+
                     for (uint8 i = 0; i < MAX_STATS; i++)
-                        pInfo[level].stats[i] += pInfo[level - 1].stats[i] - pInfo[level - 2].stats[i];
+                        pInfo[level].stats[i] += boost * std::min(1, pInfo[level - 1].stats[i] - pInfo[level - 2].stats[i]);
                 }
             }
         }
@@ -4444,8 +4446,9 @@ void ObjectMgr::LoadPlayerInfo()
                     pClassInfo->levelInfo[level] = pClassInfo->levelInfo[level - 1];
                     if (level > 1)
                     {
-                        pClassInfo->levelInfo[level].basehealth += pClassInfo->levelInfo[level - 1].basehealth - pClassInfo->levelInfo[level - 2].basehealth;
-                        pClassInfo->levelInfo[level].basemana += pClassInfo->levelInfo[level - 1].basemana - pClassInfo->levelInfo[level - 2].basemana;
+                        auto boost = (level % 5 == 0) ? 2 : 1;
+                        pClassInfo->levelInfo[level].basehealth += boost * (pClassInfo->levelInfo[level - 1].basehealth - pClassInfo->levelInfo[level - 2].basehealth);
+                        pClassInfo->levelInfo[level].basemana += boost * (pClassInfo->levelInfo[level - 1].basemana - pClassInfo->levelInfo[level - 2].basemana);
                     }
                 }
             }
@@ -4556,8 +4559,9 @@ void ObjectMgr::LoadPlayerInfo()
                         info->levelInfo[level] = info->levelInfo[level - 1];
                         if (level > 1)
                         {
+                            auto boost = (level % 5 == 0) ? 2 : 1;
                             for (uint8 i = 0; i < MAX_STATS; i++)
-                                info->levelInfo[level].stats[i] += info->levelInfo[level - 1].stats[i] - info->levelInfo[level - 2].stats[i];
+                                info->levelInfo[level].stats[i] += boost * std::min(1, info->levelInfo[level - 1].stats[i] - info->levelInfo[level - 2].stats[i]);
                         }
                     }
                 }
