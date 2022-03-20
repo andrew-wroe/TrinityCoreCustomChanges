@@ -191,19 +191,8 @@ bool AuctionBotSeller::Initialize()
         }
 
         // Filter out items with no buy/sell price unless otherwise flagged in the config.
-        if (!allowZero)
-        {
-            if (sAuctionBotConfig->GetConfig(CONFIG_AHBOT_BUYPRICE_SELLER))
-            {
-                if (prototype->SellPrice == 0)
-                    continue;
-            }
-            else
-            {
-                if (prototype->BuyPrice == 0)
-                    continue;
-            }
-        }
+        if (!allowZero && prototype->BuyPrice == 0 && prototype->SellPrice == 0)
+            continue;
 
         // vendor filter
         if (!sAuctionBotConfig->GetConfig(CONFIG_AHBOT_ITEMS_VENDOR))
