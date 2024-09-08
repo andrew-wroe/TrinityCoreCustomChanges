@@ -1188,7 +1188,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
         void LoadCorpse(PreparedQueryResult result);
         void LoadPet();
 
-        bool AddItem(uint32 itemId, uint32 count);
+        bool AddItem(uint32 itemId, uint32 count, InventoryResult* error = nullptr);
 
         /*********************************************************/
         /***                    GOSSIP SYSTEM                  ***/
@@ -1394,7 +1394,7 @@ class TC_GAME_API Player : public Unit, public GridObject<Player>
 
         PlayerMails const& GetMails() const { return m_mail; }
 
-        void SendItemRetrievalMail(uint32 itemEntry, uint32 count); // Item retrieval mails sent by The Postmaster (34337), used in multiple places.
+        void SendItemRetrievalMail(std::vector<std::tuple<uint32 /*entry*/, uint32 /*count*/, int32 /*randomPropertyId*/>> const& items); // Item retrieval mails sent by The Postmaster (34337), used in multiple places.
 
         /*********************************************************/
         /*** MAILED ITEMS SYSTEM ***/

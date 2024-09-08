@@ -15115,7 +15115,7 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
                     SendNewItem(item, quest->RewardItemIdCount[i], true, false, false, false);
                 }
                 else if (quest->IsDFQuest())
-                    SendItemRetrievalMail(itemId, quest->RewardItemIdCount[i]);
+                    SendItemRetrievalMail({ { itemId, quest->RewardItemIdCount[i], GenerateItemRandomPropertyId(itemId) } });
             }
         }
     }
@@ -24783,8 +24783,16 @@ void Player::StoreLootItem(uint8 lootSlot, Loot* loot)
 
     if (!item || item->is_looted)
     {
-        SendEquipError(EQUIP_ERR_ALREADY_LOOTED, nullptr, nullptr);
-        return;
+        if (sConfigMgr->GetBoolDefault("AOE.LOOT.enable", true))
+        {
+            //SendEquipError(EQUIP_ERR_ALREADY_LOOTED, nullptr, nullptr); prevents error already loot from spamming
+            return;
+        }
+        else
+        {
+            SendEquipError(EQUIP_ERR_ALREADY_LOOTED, nullptr, nullptr);
+            return;
+        }
     }
 
     if (!item->AllowedForPlayer(this))
@@ -26251,13 +26259,15 @@ void Player::SendRefundInfo(Item* item)
     SendDirectMessage(&data);
 }
 
-bool Player::AddItem(uint32 itemId, uint32 count)
+bool Player::AddItem(uint32 itemId, uint32 count, InventoryResult* error)
 {
     uint32 noSpaceForCount = 0;
     ItemPosCountVec dest;
     InventoryResult msg = CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemId, count, &noSpaceForCount);
     if (msg != EQUIP_ERR_OK)
         count -= noSpaceForCount;
+    if (error)
+        *error = msg;
 
     if (count == 0 || dest.empty())
     {
@@ -26397,19 +26407,34 @@ void Player::RefundItem(Item* item)
     CharacterDatabase.CommitTransaction(trans);
 }
 
-void Player::SendItemRetrievalMail(uint32 itemEntry, uint32 count)
+void Player::SendItemRetrievalMail(std::vector<std::tuple<uint32 /*entry*/, uint32 /*count*/, int32 /*randomPropertyId*/>> const& items)
 {
-    MailSender sender(MAIL_CREATURE, 34337 /* The Postmaster */);
-    MailDraft draft("Recovered Item", "We recovered a lost item in the twisting nether and noted that it was yours.$B$BPlease find said object enclosed."); // This is the text used in Cataclysm, it probably wasn't changed.
     CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
-
-    if (Item* item = Item::CreateItem(itemEntry, count, nullptr))
+    auto it = items.begin();
+    while (it != items.end())
     {
-        item->SaveToDB(trans);
-        draft.AddItem(item);
-    }
+        MailSender sender(MAIL_CREATURE, 34337 /* The Postmaster */);
+        MailDraft draft("Recovered Item", "We recovered a lost item in the twisting nether and noted that it was yours.$B$BPlease find said object enclosed."); // This is the text used in Cataclysm, it probably wasn't changed.
 
-    draft.SendMailTo(trans, MailReceiver(this, GetGUID().GetCounter()), sender);
+        uint32 addedItemCount = 0;
+        while (it != items.end())
+        {
+            auto& [itemEntry, count, randomPropertyId] = *it;
+            if (Item* item = Item::CreateItem(itemEntry, count, nullptr))
+            {
+                if (randomPropertyId)
+                    item->SetItemRandomProperties(randomPropertyId);
+                item->SaveToDB(trans);
+                draft.AddItem(item);
+                addedItemCount++;
+            }
+            ++it;
+            if (addedItemCount >= MAX_MAIL_ITEMS)
+                break;
+        }
+
+        draft.SendMailTo(trans, MailReceiver(this, GetGUID().GetCounter()), sender);
+    }
     CharacterDatabase.CommitTransaction(trans);
 }
 
