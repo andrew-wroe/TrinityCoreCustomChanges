@@ -207,7 +207,7 @@ Player::Player(WorldSession* session): Unit(true)
         SetLastRuneGraceTimer(i, 0);
     }
 
-    for (uint8 i = 0; i < MAX_TIMERS; i++)
+    for (uint8 i=0; i < MAX_TIMERS; i++)
         m_MirrorTimer[i] = DISABLED_MIRROR_TIMER;
 
     m_MirrorTimerFlags = UNDERWATER_NONE;
@@ -4393,7 +4393,7 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
     AddUnitMovementFlag(MOVEMENTFLAG_WATERWALKING);
     SetWaterWalking(false);
     if (!HasUnitState(UNIT_STATE_STUNNED))
-        SetRooted(false);
+    SetRooted(false);
 
     m_deathTimer = 0;
 
@@ -5197,8 +5197,8 @@ float Player::GetSpellCritFromIntellect() const
     if (level > GT_MAX_LEVEL)
         level = GT_MAX_LEVEL;
 
-    GtChanceToSpellCritBaseEntry const* critBase = sGtChanceToSpellCritBaseStore.LookupEntry(pclass - 1);
-    GtChanceToSpellCritEntry const* critRatio = sGtChanceToSpellCritStore.LookupEntry((pclass - 1) * GT_MAX_LEVEL + level - 1);
+    GtChanceToSpellCritBaseEntry const* critBase  = sGtChanceToSpellCritBaseStore.LookupEntry(pclass-1);
+    GtChanceToSpellCritEntry     const* critRatio = sGtChanceToSpellCritStore.LookupEntry((pclass-1)*GT_MAX_LEVEL + level-1);
     if (critBase == nullptr || critRatio == nullptr)
         return 0.0f;
 
@@ -5571,9 +5571,9 @@ bool Player::UpdateFishingSkill()
 
 bool Player::UpdateSkillPro(uint16 skillId, int32 chance, uint32 step)
 {
-    // levels sync. with spell requirement for skill levels to learn
-    // bonus abilities in sSkillLineAbilityStore
-    // Used only to avoid scan DBC at each skill grow
+// levels sync. with spell requirement for skill levels to learn
+// bonus abilities in sSkillLineAbilityStore
+// Used only to avoid scan DBC at each skill grow
     uint32 const bonusSkillLevels[] = { 75, 150, 225, 300, 375, 450 };
 
     TC_LOG_DEBUG("entities.player.skills",  "Player::UpdateSkillPro: Player '{}' ({}), SkillID: {}, Chance: {:3.1f}%)",
@@ -5611,24 +5611,24 @@ bool Player::UpdateSkillPro(uint16 skillId, int32 chance, uint32 step)
         new_value = max;
 
     SetSkillRank(itr->second.pos, new_value);
-    if (itr->second.uState != SKILL_NEW)
-        itr->second.uState = SKILL_CHANGED;
+        if (itr->second.uState != SKILL_NEW)
+            itr->second.uState = SKILL_CHANGED;
 
     for (uint32 bsl : bonusSkillLevels)
-    {
-        if (value < bsl && new_value >= bsl)
         {
+        if (value < bsl && new_value >= bsl)
+            {
             LearnSkillRewardedSpells(skillId, new_value);
-            break;
+                break;
+            }
         }
-    }
 
     UpdateSkillEnchantments(skillId, value, new_value);
     UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_REACH_SKILL_LEVEL, skillId);
-    TC_LOG_DEBUG("entities.player.skills", "Player::UpdateSkillPro: Player '{}' ({}), SkillID: {}, Chance: {:3.1f}% taken",
+        TC_LOG_DEBUG("entities.player.skills", "Player::UpdateSkillPro: Player '{}' ({}), SkillID: {}, Chance: {:3.1f}% taken",
         GetName(), GetGUID().ToString(), skillId, chance / 10.0f);
-    return true;
-}
+        return true;
+    }
 
 void Player::UpdateWeaponSkill(Unit* victim, WeaponAttackType attType)
 {
@@ -14482,8 +14482,8 @@ Quest const* Player::GetNextQuest(Object const* questGiver, Quest const* quest) 
         return sObjectMgr->GetQuestTemplate(nextQuestID);
     }
 
-    //we should obtain map pointer from GetMap() in 99% of cases. Special case
-    //only for quests which cast teleport spells on player
+        //we should obtain map pointer from GetMap() in 99% of cases. Special case
+        //only for quests which cast teleport spells on player
     if (WorldObject const* worldObjectQuestGiver = dynamic_cast<WorldObject const*>(questGiver))
         if (!IsInMap(worldObjectQuestGiver))
             return nullptr;
@@ -14491,7 +14491,7 @@ Quest const* Player::GetNextQuest(Object const* questGiver, Quest const* quest) 
     if (!questGiver->hasQuest(nextQuestID))
         return nullptr;
 
-    return sObjectMgr->GetQuestTemplate(nextQuestID);
+            return sObjectMgr->GetQuestTemplate(nextQuestID);
 }
 
 bool Player::CanSeeStartQuest(Quest const* quest) const
@@ -14940,7 +14940,7 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
                     SendNewItem(item, quest->RewardItemIdCount[i], true, false, false, false);
                 }
                 else if (quest->IsDFQuest())
-                    SendItemRetrievalMail(itemId, quest->RewardItemIdCount[i]);
+                    SendItemRetrievalMail({ { itemId, quest->RewardItemIdCount[i], GenerateItemRandomPropertyId(itemId) } });
             }
         }
     }
@@ -22980,11 +22980,11 @@ void Player::LearnSkillRewardedSpells(uint32 skillId, uint32 skillValue)
             RemoveSpell(ability->Spell);
         // need learn
         else if (!IsInWorld())
-            AddSpell(ability->Spell, true, true, true, false, false, ability->SkillLine);
-        else
-            LearnSpell(ability->Spell, true, ability->SkillLine);
+                AddSpell(ability->Spell, true, true, true, false, false, ability->SkillLine);
+            else
+                LearnSpell(ability->Spell, true, ability->SkillLine);
+        }
     }
-}
 
 void Player::SendAurasForTarget(Unit* target, bool force /*= false*/) const
 {
@@ -23109,7 +23109,7 @@ void Player::ResetSeasonalQuestStatus(uint16 event_id, time_t eventStartTime)
             questItr = eventItr->second.erase(questItr);
         else
             ++questItr;
-    }
+}
 
     if (eventItr->second.empty())
         m_seasonalquests.erase(eventItr);
@@ -23463,9 +23463,9 @@ void Player::AutoUnequipOffhandIfNeed(bool force /*= false*/)
 
     ItemTemplate const* offhandTemplate = offItem->GetTemplate();
 
-    // unequip offhand weapon if player doesn't have dual wield anymore
+     // unequip offhand weapon if player doesn't have dual wield anymore
     if (!CanDualWield() && (offhandTemplate->InventoryType == INVTYPE_WEAPONOFFHAND || offhandTemplate->InventoryType == INVTYPE_WEAPON))
-        force = true;
+          force = true;
 
     // need unequip offhand for 2h-weapon without TitanGrip (in any from hands)
     if (!force)
@@ -23473,7 +23473,7 @@ void Player::AutoUnequipOffhandIfNeed(bool force /*= false*/)
         Item* mainItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
         if ((!mainItem || mainItem->GetTemplate()->InventoryType != INVTYPE_2HWEAPON)
             && offhandTemplate->InventoryType != INVTYPE_2HWEAPON)
-            return;
+        return;
 
         if ((!mainItem || CanTitanGrip(mainItem)) && CanTitanGrip(offItem))
             return;
@@ -24643,8 +24643,16 @@ void Player::StoreLootItem(uint8 lootSlot, Loot* loot)
 
     if (!item || item->is_looted)
     {
-        SendEquipError(EQUIP_ERR_LOOT_GONE, nullptr, nullptr);
-        return;
+        if (sConfigMgr->GetBoolDefault("AOE.LOOT.enable", true))
+        {
+            //SendEquipError(EQUIP_ERR_LOOT_GONE, nullptr, nullptr); prevents error already loot from spamming
+            return;
+        }
+        else
+        {
+            SendEquipError(EQUIP_ERR_LOOT_GONE, nullptr, nullptr);
+            return;
+        }
     }
 
     if (!item->AllowedForPlayer(this))
@@ -26110,13 +26118,15 @@ void Player::SendRefundInfo(Item* item)
     SendDirectMessage(&data);
 }
 
-bool Player::AddItem(uint32 itemId, uint32 count)
+bool Player::AddItem(uint32 itemId, uint32 count, InventoryResult* error)
 {
     uint32 noSpaceForCount = 0;
     ItemPosCountVec dest;
     InventoryResult msg = CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemId, count, &noSpaceForCount);
     if (msg != EQUIP_ERR_OK)
         count -= noSpaceForCount;
+    if (error)
+        *error = msg;
 
     if (count == 0 || dest.empty())
     {
@@ -26259,19 +26269,34 @@ void Player::RefundItem(Item* item)
     CharacterDatabase.CommitTransaction(trans);
 }
 
-void Player::SendItemRetrievalMail(uint32 itemEntry, uint32 count)
+void Player::SendItemRetrievalMail(std::vector<std::tuple<uint32 /*entry*/, uint32 /*count*/, int32 /*randomPropertyId*/>> const& items)
 {
-    MailSender sender(MAIL_CREATURE, 34337 /* The Postmaster */);
-    MailDraft draft("Recovered Item", "We recovered a lost item in the twisting nether and noted that it was yours.$B$BPlease find said object enclosed."); // This is the text used in Cataclysm, it probably wasn't changed.
     CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
-
-    if (Item* item = Item::CreateItem(itemEntry, count, nullptr))
+    auto it = items.begin();
+    while (it != items.end())
     {
-        item->SaveToDB(trans);
-        draft.AddItem(item);
-    }
+        MailSender sender(MAIL_CREATURE, 34337 /* The Postmaster */);
+        MailDraft draft("Recovered Item", "We recovered a lost item in the twisting nether and noted that it was yours.$B$BPlease find said object enclosed."); // This is the text used in Cataclysm, it probably wasn't changed.
 
-    draft.SendMailTo(trans, MailReceiver(this, GetGUID().GetCounter()), sender);
+        uint32 addedItemCount = 0;
+        while (it != items.end())
+        {
+            auto& [itemEntry, count, randomPropertyId] = *it;
+            if (Item* item = Item::CreateItem(itemEntry, count, nullptr))
+            {
+                if (randomPropertyId)
+                    item->SetItemRandomProperties(randomPropertyId);
+                item->SaveToDB(trans);
+                draft.AddItem(item);
+                addedItemCount++;
+            }
+            ++it;
+            if (addedItemCount >= MAX_MAIL_ITEMS)
+                break;
+        }
+
+        draft.SendMailTo(trans, MailReceiver(this, GetGUID().GetCounter()), sender);
+    }
     CharacterDatabase.CommitTransaction(trans);
 }
 
