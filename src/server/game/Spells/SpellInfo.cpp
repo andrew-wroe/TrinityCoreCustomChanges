@@ -1540,14 +1540,14 @@ SpellCastResult SpellInfo::CheckLocation(uint32 map_id, uint32 zone_id, uint32 a
             if (!areaEntry)
                 areaEntry = sAreaTableStore.LookupEntry(zone_id);
 
-            if (!areaEntry || !areaEntry->IsFlyable() || !player->CanFlyInZone(map_id, zone_id, this))
+            if (!areaEntry /*|| !areaEntry->IsFlyable()*/ || !player->CanFlyInZone(map_id, zone_id, this))
                 return SPELL_FAILED_INCORRECT_AREA;
         }
         else
         {
             uint32 const v_map = GetVirtualMapForMapAndZone(map_id, zone_id);
             MapEntry const* mapEntry = sMapStore.LookupEntry(v_map);
-            if (!mapEntry || mapEntry->Expansion() < 1 || !mapEntry->IsContinent())
+            if (!mapEntry /*|| mapEntry->Expansion() < 1*/ || !mapEntry->IsContinent())
                 return SPELL_FAILED_INCORRECT_AREA;
         }
     }
