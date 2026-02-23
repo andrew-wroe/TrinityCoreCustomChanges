@@ -3420,6 +3420,12 @@ void ObjectMgr::LoadItemTemplates()
             itemTemplate.FlagsCu &= ~ITEM_FLAGS_CU_DURATION_REAL_TIME;
         }
 
+        if (itemTemplate.SubClass == ITEM_SUBCLASS_JUNK_MOUNT)
+        {
+            if (itemTemplate.RequiredLevel >= 60)
+                itemTemplate.RequiredLevel = 58;
+        }
+
         // Load cached data
         itemTemplate._LoadTotalAP();
     } while (result->NextRow());
@@ -9253,6 +9259,19 @@ void ObjectMgr::LoadTrainers()
 
             if (!allReqValid)
                 continue;
+
+            if (spell.SpellId == 54197 || // Cold Weather Flying
+                spell.SpellId == 34091 || // Artisan Riding
+                spell.SpellId == 34090 || // Expert Riding
+                spell.SpellId == 33943)   // Flight Form
+            {
+                if (spell.ReqLevel >= 70)
+                    spell.ReqLevel = 68; // Northrend min level
+                else if (spell.ReqLevel >= 60)
+                    spell.ReqLevel = 58; // Outland min level
+                if (spell.SpellId != 33943)
+                    spell.MoneyCost /= 10;
+            }
 
             spellsByTrainer[trainerId].push_back(spell);
         } while (trainerSpellsResult->NextRow());
