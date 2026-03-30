@@ -102,9 +102,13 @@ inline void KillRewarder::_InitGroupData()
                         _maxLevel = lvl;
                     // 2.4. _maxNotGrayMember - maximum level of alive group member within reward distance,
                     //      for whom victim is not gray;
-                    uint32 grayLevel = Trinity::XP::GetGrayLevel(lvl);
-                    if (_victim->GetLevel() > grayLevel && (!_maxNotGrayMember || _maxNotGrayMember->GetLevel() < lvl))
-                        _maxNotGrayMember = member;
+                    const uint8 grayLevel = Trinity::XP::GetGrayLevel(lvl);
+                    if (_victim->GetLevel() > grayLevel)
+                    {
+                        const uint8 maxNonGrayLevel = _maxNotGrayMember ? _maxNotGrayMember->GetLevel() : 0;
+                        if (maxNonGrayLevel < lvl || (maxNonGrayLevel == lvl && _maxNotGrayMember->GetXP() < member->GetXP()))
+                            _maxNotGrayMember = member;
+                    }
                 }
         // 2.5. _isFullXP - flag identifying that for all group members victim is not gray,
         //      so 100% XP will be rewarded (50% otherwise).
@@ -140,11 +144,21 @@ inline void KillRewarder::_RewardXP(Player* player, float rate)
         // 4.2.1. If player is in group, adjust XP:
         //        * set to 0 if player's level is more than maximum level of not gray member;
         //        * cut XP in half if _isFullXP is false.
-        if (_maxNotGrayMember && player->IsAlive() &&
-            _maxNotGrayMember->GetLevel() >= player->GetLevel())
+        const uint8 playerLevel  = player->GetLevel();
+        const uint8 maxNotGrayLevel = _maxNotGrayMember ? _maxNotGrayMember->GetLevel() : 0;
+        if (player->IsAlive() && maxNotGrayLevel >= playerLevel)
+        {
             xp = _isFullXP ?
             uint32(xp * rate) :             // Reward FULL XP if all group members are not gray.
             uint32(xp * rate / 2) + 1;      // Reward only HALF of XP if some of group members are gray.
+            if (_maxNotGrayMember && _maxNotGrayMember != player)
+            {
+                const uint32 doubleXP = 2 * xp; // Double XP to catch-up with higher level players!
+                const uint32 limitXP = maxNotGrayLevel == playerLevel ? _maxNotGrayMember->GetXP() : player->GetXPForNextLevel();
+                if (doubleXP < (limitXP - player->GetXP()))
+                    xp = doubleXP;
+            }
+        }
         else
             xp = 0;
     }
