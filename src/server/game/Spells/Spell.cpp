@@ -4881,6 +4881,9 @@ void Spell::TakePower()
 
 void Spell::TakeAmmo()
 {
+    // Infinite ammo
+    return;
+
     // Only players use ammo
     Player* player = m_caster->ToPlayer();
     if (!player)
@@ -5053,6 +5056,46 @@ void Spell::TakeRunePower(bool didHit)
 void Spell::TakeReagents()
 {
     if (m_caster->GetTypeId() != TYPEID_PLAYER)
+        return;
+
+    static const std::unordered_set<uint32> cataclysmNoReagentSpells = {
+        // Mage
+        1459,  // Arcane Brilliance
+        43987, // Ritual of Refreshment
+        3561,  // Teleport: Stormwind
+        3562,  // Teleport: Ironforge
+        3567,  // Teleport: Orgrimmar
+        3566,  // Teleport: Thunder Bluff
+        10059, // Portal: Stormwind
+        11416, // Portal: Ironforge
+        11417, // Portal: Orgrimmar
+        11420, // Portal: Thunder Bluff
+        // Priest
+        1706,  // Levitate
+        21562, // Prayer of Fortitude
+        27683, // Prayer of Spirit
+        27681, // Prayer of Shadow Protection
+        // Druid
+        20484, // Rebirth
+        21849, // Gift of the Wild
+        // Warlock
+        6215,  // Fear
+        691,   // Summon Felhunter
+        712,   // Summon Succubus
+        697,   // Summon Voidwalker
+        1122,  // Inferno (Summon Infernal)
+        698,   // Ritual of Summoning
+        29858, // Ritual of Souls
+        // Paladin
+        25898, // Greater Blessing of Kings
+        25890, // Greater Blessing of Might
+        25782, // Greater Blessing of Wisdom
+        // Shaman
+        20608, // Reincarnation
+        546    // Water Walking
+    };
+
+    if (cataclysmNoReagentSpells.contains(m_spellInfo->Id))
         return;
 
     ItemTemplate const* castItemTemplate = m_CastItem ? m_CastItem->GetTemplate() : nullptr;
